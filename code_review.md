@@ -32,25 +32,25 @@ If the stored string is corrupted or from an older schema, `JSON.parse` will eit
 
 ## High
 
-### 6. `ads.ts`: reward is granted before ad is confirmed closed
+### 6. ✅ FIXED — `ads.ts`: reward is granted before ad is confirmed closed
 `onRewarded()` fires on `EARNED_REWARD`, which fires while the ad is still on screen. The `onDismissed` callback fires later. This means the boost is set in state and the "✓ Ready" UI renders while the ad fullscreen is still showing, which looks broken. The reward should be granted on `CLOSED`, after confirming `EARNED_REWARD` was already received.
 
-### 7. `ads.ts`: listeners are not cleaned up on error
+### 7. ✅ FIXED — `ads.ts`: listeners are not cleaned up on error
 If the ad fails to load (`AdEventType.ERROR`), none of the three `unsubscribe` functions are ever called. The listeners leak and `loadingBoost` state in `HomeScreen` never resets, permanently disabling the boost buttons for the session.
 
-### 8. Settings are not persisted (`src/game/settingsContext.tsx`)
+### 8. ✅ FIXED — Settings are not persisted (`src/game/settingsContext.tsx`)
 `soundEnabled` and `playerName` are plain React state — they reset to defaults every cold start. The player name they set in the pause menu is lost when the app is killed. Use AsyncStorage here.
 
-### 9. `bestScore` lives only in the game reducer (`src/game/gameReducer.ts`)
+### 9. ✅ FIXED — `bestScore` lives only in the game reducer (`src/game/gameReducer.ts`)
 `bestScore` is initialised to `0` in `createInitialState()` and is never read from or written to AsyncStorage. The all-time best is lost on every app restart. The "BEST" display in the header and "NEW BEST!" banner are correct within a session but meaningless across sessions.
 
-### 10. Score popup layer positioning is hardcoded (`App.tsx:550`)
+### 10. ✅ FIXED — Score popup layer positioning is hardcoded (`App.tsx:550`)
 ```ts
 popupLayer: { position: 'absolute', top: -50, ... }
 ```
 `-50` is relative to `gridWrapper`, which is laid out by `justifyContent: 'space-between'`. On shorter screens (small Android phones) the popup will clip into the timer bar. It should be measured or driven by the layout.
 
-### 11. `GameScreen` reads `useSettings()` but `SettingsProvider` wraps `GameProvider`, not the other way around (`App.tsx`)
+### 11. ✅ BY DESIGN — `GameScreen` reads `useSettings()` but `SettingsProvider` wraps `GameProvider`, not the other way around (`App.tsx`)
 `GameProvider` is nested inside `SettingsProvider`. `GameScreen` is rendered by `GameProvider`'s children. This currently works, but means game logic (inside `GameProvider`) cannot access settings — any future attempt to use settings in game context will silently get the wrong context. The nesting should be documented or intentionally designed.
 
 ---

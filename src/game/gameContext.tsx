@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { GameState, GameAction } from '../types/game';
 import { gameReducer, createInitialState } from './gameReducer';
+
+const BEST_SCORE_KEY = '@starfuse_best_score';
 
 interface GameContextValue {
   state: GameState;
@@ -17,6 +20,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const rafRef            = useRef<number>(0);
   const spawnTimersRef    = useRef<ReturnType<typeof setTimeout>[]>([]);
   const prevQueueLenRef   = useRef(0);
+
+  // Restore best score from storage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(BEST_SCORE_KEY).then(raw => {
+      const saved = raw ? parseInt(raw, 10) : 0;
+      if (saved > 0) dispatch({ type: 'LOAD_BEST_SCORE', score: saved });
+    }).catch(() => {});
+  }, []);
+
+  // Persist best score whenever it improves
+  const prevBestRef = useRef(0);
+  useEffect(() => {
+    if (state.bestScore > prevBestRef.current) {
+      prevBestRef.current = state.bestScore;
+      AsyncStorage.setItem(BEST_SCORE_KEY, String(state.bestScore)).catch(() => {});
+    }
+  }, [state.bestScore]);
 
   // RAF-based countdown — stops when paused or not running
   useEffect(() => {

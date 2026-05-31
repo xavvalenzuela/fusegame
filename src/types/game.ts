@@ -53,4 +53,5 @@ export type GameAction =
   | { type: 'SELECT_TILE'; tileId: string }
   | { type: 'SPAWN_PENDING' }
   | { type: 'TICK'; deltaMs: number }
-  | { type: 'GAME_OVER' };
+  | { type: 'GAME_OVER' }
+  | { type: 'LOAD_BEST_SCORE'; score: number };

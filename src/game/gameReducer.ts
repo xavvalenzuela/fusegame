@@ -239,6 +239,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'GAME_OVER':
       return { ...state, isRunning: false, isGameOver: true };
 
+    case 'LOAD_BEST_SCORE':
+      return { ...state, bestScore: Math.max(state.bestScore, action.score) };
+
     default:
       return state;
   }

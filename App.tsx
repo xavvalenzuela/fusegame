@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
   // Score popups
   popupLayer: {
     position: 'absolute',
-    top: -50,
+    bottom: '100%',
     left: 0,
     right: 0,
     alignItems: 'center',

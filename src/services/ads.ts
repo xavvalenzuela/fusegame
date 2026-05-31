@@ -15,26 +15,34 @@ export function showRewardedAd(onRewarded: () => void, onDismissed?: () => void)
     requestNonPersonalizedAdsOnly: true,
   });
 
-  const unsubscribeLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+  let earned = false;
+  const unsubs: (() => void)[] = [];
+
+  function cleanup() {
+    unsubs.forEach(fn => fn());
+  }
+
+  unsubs.push(ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
     ad.show();
-  });
+  }));
 
-  const unsubscribeEarned = ad.addAdEventListener(
-    RewardedAdEventType.EARNED_REWARD,
-    () => {
-      onRewarded();
-    },
-  );
+  // Track reward earned — but don't grant it yet (ad still on screen)
+  unsubs.push(ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+    earned = true;
+  }));
 
-  const unsubscribeClosed = ad.addAdEventListener(
-    AdEventType.CLOSED,
-    () => {
-      unsubscribeLoaded();
-      unsubscribeEarned();
-      unsubscribeClosed();
-      onDismissed?.();
-    },
-  );
+  // Grant reward only after ad is fully closed
+  unsubs.push(ad.addAdEventListener(AdEventType.CLOSED, () => {
+    cleanup();
+    if (earned) onRewarded();
+    onDismissed?.();
+  }));
+
+  // Clean up all listeners on error so loadingBoost state resets
+  unsubs.push(ad.addAdEventListener(AdEventType.ERROR, () => {
+    cleanup();
+    onDismissed?.();
+  }));
 
   ad.load();
 }

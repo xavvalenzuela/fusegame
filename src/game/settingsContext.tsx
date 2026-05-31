@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const SETTINGS_KEY = '@starfuse_settings';
 
 interface Settings {
   playerName: string;
@@ -10,16 +13,29 @@ interface SettingsContextValue {
   updateSettings: (update: Partial<Settings>) => void;
 }
 
+const DEFAULTS: Settings = { playerName: 'Player', soundEnabled: true };
+
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<Settings>({
-    playerName: 'Player',
-    soundEnabled: true,
-  });
+  const [settings, setSettings] = useState<Settings>(DEFAULTS);
+
+  useEffect(() => {
+    AsyncStorage.getItem(SETTINGS_KEY).then(raw => {
+      if (!raw) return;
+      try {
+        const saved = JSON.parse(raw);
+        setSettings(s => ({ ...s, ...saved }));
+      } catch {}
+    });
+  }, []);
 
   function updateSettings(update: Partial<Settings>) {
-    setSettings(s => ({ ...s, ...update }));
+    setSettings(s => {
+      const next = { ...s, ...update };
+      AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
   }
 
   return (
