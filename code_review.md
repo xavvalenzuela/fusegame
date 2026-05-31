@@ -19,7 +19,7 @@ id = Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 ### 3. ✅ FIXED — `submitScore` always creates a new Firestore document (`src/services/leaderboard.ts:105`)
 Every game over posts a new document. A single user can spam the global leaderboard with thousands of entries across sessions. There is no deduplication, rate limiting, or "keep only best score per device" logic. The global board will degrade quickly once real users appear.
 
-### 4. Personal scores are never capped per-device globally
+### 4. ✅ FIXED (by design) — Personal scores are never capped per-device globally
 `savePersonalScore` caps at 20 entries locally, but if the user reinstalls the app the local history is lost entirely (AsyncStorage is wiped on uninstall). There is no cloud backup of personal history.
 
 ### 5. ✅ FIXED — `getPersonalScores` deserialises raw JSON without validation (`src/services/leaderboard.ts:47`)

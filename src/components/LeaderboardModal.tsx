@@ -104,7 +104,7 @@ export function LeaderboardModal({ onClose }: Props) {
             onPress={() => setTab('personal')}
           >
             <Text style={[styles.tabText, tab === 'personal' && styles.tabTextActive]}>
-              👤 Personal
+              👤 This Device
             </Text>
           </TouchableOpacity>
         </View>
