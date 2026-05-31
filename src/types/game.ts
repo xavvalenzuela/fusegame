@@ -41,6 +41,7 @@ export interface GameState {
   preGameBoost: PreGameBoost | null;
   canContinue: boolean;
   isContinued: boolean;
+  sessionDurationMs: number;
 }
 
 export type GameAction =

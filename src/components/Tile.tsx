@@ -52,8 +52,9 @@ export function Tile({ tile, isSelected, onTap }: Props) {
         -1,
         true,
       );
+    } else {
+      starPulse.value = withTiming(0, { duration: 180 });
     }
-    return () => { starPulse.value = 0; };
   }, [isStar]);
 
   // Selection glow

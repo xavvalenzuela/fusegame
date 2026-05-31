@@ -141,13 +141,23 @@ export function LeaderboardModal({ onClose }: Props) {
               <Text style={[styles.headerCell, { flex: 1, textAlign: 'left', paddingLeft: 8 }]}>Player</Text>
               <Text style={[styles.headerCell, { width: 70, textAlign: 'right' }]}>Score</Text>
             </View>
-            <FlatList
-              data={tab === 'global' ? global : personal}
-              keyExtractor={(_, i) => String(i)}
-              renderItem={tab === 'global' ? renderGlobalRow : renderPersonalRow}
-              style={styles.list}
-              showsVerticalScrollIndicator={false}
-            />
+            {tab === 'global' ? (
+              <FlatList<LeaderboardEntry>
+                data={global}
+                keyExtractor={(_, i) => String(i)}
+                renderItem={renderGlobalRow}
+                style={styles.list}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <FlatList<PersonalEntry>
+                data={personal}
+                keyExtractor={(_, i) => String(i)}
+                renderItem={renderPersonalRow}
+                style={styles.list}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </>
         )}
 

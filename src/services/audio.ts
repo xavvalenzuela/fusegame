@@ -20,17 +20,27 @@ let _pool: Record<string, Sound[]> = {};
 let _idx: Record<string, number> = {};
 let _music: Sound | null = null;
 
-export function initAudio() {
+export function initAudio(): Promise<void> {
+  // Release any existing instances so re-calls don't grow the pool unboundedly
+  for (const pool of Object.values(_pool)) pool.forEach(s => s.release());
+  _pool = {};
+  _idx  = {};
+
+  const loads: Promise<void>[] = [];
   for (const [key, file] of Object.entries(SOUND_FILES)) {
     _pool[key] = [];
-    _idx[key] = 0;
+    _idx[key]  = 0;
     for (let i = 0; i < POOL_SIZE; i++) {
-      const s = new Sound(file, Sound.MAIN_BUNDLE, (err) => {
-        if (err) console.warn('[audio] load failed:', key, JSON.stringify(err));
-      });
-      _pool[key].push(s);
+      loads.push(new Promise<void>(resolve => {
+        const s = new Sound(file, Sound.MAIN_BUNDLE, err => {
+          if (err) console.warn('[audio] load failed:', key, JSON.stringify(err));
+          resolve();
+        });
+        _pool[key].push(s);
+      }));
     }
   }
+  return Promise.all(loads).then(() => {});
 }
 
 export function setSoundEnabled(on: boolean) {

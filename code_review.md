@@ -57,10 +57,10 @@ popupLayer: { position: 'absolute', top: -50, ... }
 
 ## Medium
 
-### 12. `selectedRef` in `Grid.tsx` can desync from reducer state
+### 12. ✅ FIXED — `selectedRef` in `Grid.tsx` can desync from reducer state
 `selectedRef` is updated by `useEffect` (async after render) AND manually in `handleTap` (sync). If the reducer rejects or modifies a `SELECT_TILE` action (e.g. game is paused, `isRunning = false`), `selectedRef` has already been updated imperatively in `handleTap` but the reducer returned the old state. The ref and the reducer state are now out of sync until the next render. There is currently one code path that causes this: tapping a tile when `!state.isRunning` (before game starts or after game over) — the reducer returns early but `selectedRef.current` was already mutated.
 
-### 13. `Tile.tsx`: `useEffect` for star pulse has a stale dependency
+### 13. ✅ FIXED — `Tile.tsx`: `useEffect` for star pulse has a stale dependency
 ```ts
 useEffect(() => {
   if (isStar) { starPulse.value = withRepeat(...) }
@@ -69,34 +69,34 @@ useEffect(() => {
 ```
 The cleanup sets `starPulse.value = 0` unconditionally. When a diamond tile upgrades to a star (its `value` prop changes), the cleanup of the old effect runs and zeroes the pulse, then the new effect starts it again — a visible flash. The cleanup should only reset if the tile is no longer a star: `return () => { if (!isStar) starPulse.value = 0; }`.
 
-### 14. `LeaderboardModal.tsx`: TypeScript error suppressed by mismatched types (line 145)
+### 14. ✅ FIXED — `LeaderboardModal.tsx`: TypeScript error suppressed by mismatched types (line 145)
 `FlatList data` is typed as `LeaderboardEntry[]` but `personal` is `PersonalEntry[]` (missing `id` and `deviceId`). TypeScript flags this but the app renders it fine at runtime. The types should be fixed — either a union `LeaderboardEntry | PersonalEntry` or a separate typed FlatList for each tab.
 
-### 15. `gameReducer.ts`: star time bonus is capped at `GAME_DURATION_MS`
+### 15. ✅ FIXED — `gameReducer.ts`: star time bonus is capped at `GAME_DURATION_MS`
 ```ts
 const newTime = Math.min(state.timeRemainingMs + timeBonus, GAME_DURATION_MS);
 ```
 With a 60s game, this means a star fuse at t=58s gives +3s but is capped to 60s (player only gets 2s). If the player is in `continue` mode (15s max), the cap is wrong — it should cap at `GAME_DURATION_MS` only in the first game, and uncapped (or capped higher) on continue. Currently a continued game can never exceed 15s regardless of stars fused.
 
-### 16. `gameReducer.ts`: combo idle timeout uses `GAME_DURATION_MS` as the normaliser even during continue
+### 16. ✅ FIXED — `gameReducer.ts`: combo idle timeout uses `GAME_DURATION_MS` as the normaliser even during continue
 ```ts
 const pct = Math.max(0, state.timeRemainingMs / GAME_DURATION_MS);
 ```
 After `CONTINUE_GAME`, `timeRemainingMs` starts at 15,000. `15000 / 60000 = 0.25`. The combo timeout is immediately set to `1500 + 0.25 * 1500 = 1875ms` — close to the minimum — making the continued game very punishing for combos even in the first second. Should use the starting time of the current session as the normaliser, not the original `GAME_DURATION_MS`.
 
-### 17. `TILE_SIZE` is computed from screen width at module load time (`src/constants/theme.ts`)
+### 17. ✅ ALREADY FIXED — `TILE_SIZE` is computed from screen width at module load time (`src/constants/theme.ts`)
 ```ts
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 ```
 This is a static snapshot at import time. It does not respond to orientation changes or foldable phone layout changes. For a portrait-only game this is fine, but it should be locked to portrait in the manifest to make the assumption explicit.
 
-### 18. `audio.ts`: `initAudio()` is synchronous but returns `void`, not `Promise<void>`
+### 18. ✅ FIXED — `audio.ts`: `initAudio()` is synchronous but returns `void`, not `Promise<void>`
 Callers cannot await it. If sounds haven't finished `prepareAsync` before the first game starts, the first few taps will silently produce no sound. There's no loading gate or ready callback.
 
-### 19. `audio.ts`: pool `_idx` is never reset when a game restarts
+### 19. ✅ FIXED — `audio.ts`: pool `_idx` is never reset when a game restarts
 Round-robin indices survive across game sessions. This is harmless functionally, but means the pool state is never truly cleaned up. More importantly, if `initAudio()` is ever called a second time (e.g. after a settings change or hot-reload), it will push 3 more Sound instances onto the arrays without clearing the old ones, growing the pool unboundedly.
 
-### 20. `generate-sounds.js`: script is not integrated into the build pipeline
+### 20. ✅ FIXED — `generate-sounds.js`: script is not integrated into the build pipeline
 The WAV files in `android/app/src/main/res/raw/` are generated manually by running `node scripts/generate-sounds.js`. If a developer clones the repo and runs the Android build without running this script first, the build succeeds but the app has no sounds. The script should be added to the `prebuild` npm script or to the Gradle `preBuild` task.
 
 ---

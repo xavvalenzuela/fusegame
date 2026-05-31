@@ -22,6 +22,7 @@ export function Grid() {
   useEffect(() => { selectedRef.current = state.selectedTileId; }, [state.selectedTileId]);
 
   function handleTap(tileId: string) {
+    if (!state.isRunning) return;
     const selectedTileId = selectedRef.current;
     const { tiles, combo } = state;
 

@@ -71,6 +71,7 @@ export function createInitialState(): GameState {
     preGameBoost: null,
     canContinue: true,
     isContinued: false,
+    sessionDurationMs: GAME_DURATION_MS,
   };
 }
 
@@ -91,6 +92,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         tiles: createInitialTiles(),
         isRunning: true,
         timeRemainingMs: startTime,
+        sessionDurationMs: startTime,
         activePowerUps: startPowerUps,
         preGameBoost: null,
       };
@@ -117,6 +119,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         isContinued: true,
         canContinue: false,
         timeRemainingMs: CONTINUE_BONUS_MS,
+        sessionDurationMs: CONTINUE_BONUS_MS,
         selectedTileId: null,
       };
     }
@@ -156,7 +159,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const timeBonus = isStarFuse ? STAR_TIME_BONUS_MS : 0;
-      const newTime   = Math.min(state.timeRemainingMs + timeBonus, GAME_DURATION_MS);
+      const newTime   = Math.min(state.timeRemainingMs + timeBonus, state.sessionDurationMs);
       const newScore  = state.score + scoreGain;
 
       if (isStarFuse) {
@@ -213,8 +216,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         .map(p => ({ ...p, remainingMs: p.remainingMs - action.deltaMs }))
         .filter(p => p.remainingMs > 0);
 
-      // Combo idle timeout — window shrinks linearly as time runs out
-      const pct          = Math.max(0, state.timeRemainingMs / GAME_DURATION_MS);
+      // Combo idle timeout — window shrinks linearly as time runs out within this session
+      const pct          = Math.max(0, state.timeRemainingMs / state.sessionDurationMs);
       const comboTimeout = COMBO_TIMEOUT_MIN_MS + pct * (COMBO_TIMEOUT_MAX_MS - COMBO_TIMEOUT_MIN_MS);
       const newComboIdle = state.comboIdleMs + action.deltaMs;
       const comboReset   = state.combo > 0 && newComboIdle >= comboTimeout;
