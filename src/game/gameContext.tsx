@@ -87,7 +87,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       spawnTimersRef.current.forEach(clearTimeout);
       spawnTimersRef.current = [];
       // Don't reset prevQueueLenRef on pause so resume picks up correctly
-      if (!state.isRunning) prevQueueLenRef.current = 0;
+      prevQueueLenRef.current = 0;
     }
   }, [state.isRunning, state.isPaused]);
 

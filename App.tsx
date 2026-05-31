@@ -20,14 +20,7 @@ import { BACKGROUND_COLOR, GAME_DURATION_MS } from './src/constants/theme';
 import type { PreGameBoost, PowerUpType } from './src/types/game';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
-const VIGNETTE_SIZE = 90; // px of golden gradient on each edge
-
-// Initialize AdMob once at app startup
-MobileAds().initialize();
-// Warm the Firestore connection so leaderboard opens fast
-prefetchLeaderboard();
-// Pre-generate all synthesized sounds in background
-initAudio();
+const VIGNETTE_SIZE = Math.round(SCREEN_W * 0.23);
 
 const CONTINUE_COUNTDOWN_S = 5;
 
@@ -107,10 +100,9 @@ const BOOST_OPTIONS: { boost: PreGameBoost; label: string; sub: string; color: s
   { boost: 'multiplier-boost', label: '🟢 Multiplier Boost',  sub: 'Green star power', color: '#29AA55' },
 ];
 
-function HomeScreen() {
+function HomeScreen({ onShowLeaderboard }: { onShowLeaderboard: () => void }) {
   const { state, dispatch } = useGame();
   const [loadingBoost, setLoadingBoost] = useState<PreGameBoost | null>(null);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   function watchAdForBoost(boost: PreGameBoost) {
     if (loadingBoost) return;
@@ -170,7 +162,7 @@ function HomeScreen() {
 
       <TouchableOpacity
         style={styles.leaderboardBtn}
-        onPress={() => setShowLeaderboard(true)}
+        onPress={onShowLeaderboard}
       >
         <Text style={styles.leaderboardBtnText}>🏆 Leaderboard</Text>
       </TouchableOpacity>
@@ -178,21 +170,16 @@ function HomeScreen() {
       {state.bestScore > 0 && (
         <Text style={styles.bestScore}>BEST {state.bestScore}</Text>
       )}
-
-      {showLeaderboard && (
-        <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
-      )}
     </View>
   );
 }
 
-function GameOverScreen() {
+function GameOverScreen({ onShowLeaderboard }: { onShowLeaderboard: () => void }) {
   const { state, dispatch } = useGame();
   const { settings } = useSettings();
   const [countdown, setCountdown] = useState(CONTINUE_COUNTDOWN_S);
   const [showContinue, setShowContinue] = useState(state.canContinue && !state.isContinued);
   const [loadingAd, setLoadingAd] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
 
@@ -271,7 +258,7 @@ function GameOverScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.leaderboardBtn}
-            onPress={() => setShowLeaderboard(true)}
+            onPress={onShowLeaderboard}
           >
             <Text style={styles.leaderboardBtnText}>🏆 Leaderboard</Text>
           </TouchableOpacity>
@@ -279,10 +266,6 @@ function GameOverScreen() {
             <Text style={styles.backToMenuText}>← Back to Menu</Text>
           </TouchableOpacity>
         </>
-      )}
-
-      {showLeaderboard && (
-        <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
       )}
     </View>
   );
@@ -382,12 +365,11 @@ function GoldenVignette({ visible }: { visible: boolean }) {
   );
 }
 
-function PauseMenu() {
+function PauseMenu({ onShowLeaderboard }: { onShowLeaderboard: () => void }) {
   const { state, dispatch } = useGame();
   const { settings, updateSettings } = useSettings();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(settings.playerName);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [confirmQuit, setConfirmQuit] = useState(false);
 
   function saveName() {
@@ -439,14 +421,10 @@ function PauseMenu() {
         </TouchableOpacity>
 
         {/* Leaderboards */}
-        <TouchableOpacity style={styles.pauseRow} onPress={() => setShowLeaderboard(true)}>
+        <TouchableOpacity style={styles.pauseRow} onPress={onShowLeaderboard}>
           <Text style={styles.pauseRowLabel}>Leaderboards</Text>
           <Text style={styles.pauseRowValue}>🏆 View</Text>
         </TouchableOpacity>
-
-        {showLeaderboard && (
-          <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
-        )}
 
         {/* Resume */}
         <TouchableOpacity
@@ -484,6 +462,9 @@ function PauseMenu() {
 
 function GameScreen() {
   const { state, dispatch } = useGame();
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const onShowLeaderboard  = () => setShowLeaderboard(true);
+  const onCloseLeaderboard = () => setShowLeaderboard(false);
 
   // Android back button → pause / unpause
   useEffect(() => {
@@ -549,8 +530,18 @@ function GameScreen() {
   const boostPowerUp     = state.activePowerUps.find(p => p.type === 'multiplier-boost');
   const effectiveMult    = Math.max(1, state.combo + (boostPowerUp ? (boostPowerUp.bonus ?? 5) : 0));
 
-  if (!state.isRunning && !state.isGameOver) return <HomeScreen />;
-  if (state.isGameOver)                       return <GameOverScreen />;
+  if (!state.isRunning && !state.isGameOver) return (
+    <>
+      <HomeScreen onShowLeaderboard={onShowLeaderboard} />
+      {showLeaderboard && <LeaderboardModal onClose={onCloseLeaderboard} />}
+    </>
+  );
+  if (state.isGameOver) return (
+    <>
+      <GameOverScreen onShowLeaderboard={onShowLeaderboard} />
+      {showLeaderboard && <LeaderboardModal onClose={onCloseLeaderboard} />}
+    </>
+  );
 
   return (
     <View style={styles.gameContainer}>
@@ -622,13 +613,21 @@ function GameScreen() {
       <GoldenVignette visible={allThreeActive} />
 
       {/* Pause menu overlay */}
-      {state.isPaused && <PauseMenu />}
+      {state.isPaused && <PauseMenu onShowLeaderboard={onShowLeaderboard} />}
+      {showLeaderboard && <LeaderboardModal onClose={onCloseLeaderboard} />}
     </View>
   );
 }
 
 export default function App() {
   const [fontsLoaded] = useFonts({ 'Orbitron-Bold': Orbitron_700Bold, 'Orbitron-Black': Orbitron_900Black });
+
+  useEffect(() => {
+    MobileAds().initialize().catch(() => {});
+    prefetchLeaderboard();
+    initAudio().catch(() => {});
+  }, []);
+
   if (!fontsLoaded) return null;
 
   return (

@@ -103,22 +103,22 @@ The WAV files in `android/app/src/main/res/raw/` are generated manually by runni
 
 ## Low
 
-### 21. `App.tsx`: `MobileAds().initialize()` and `prefetchLeaderboard()` and `initAudio()` are module-level side effects
+### 21. ✅ FIXED — `App.tsx`: `MobileAds().initialize()` and `prefetchLeaderboard()` and `initAudio()` are module-level side effects
 These three calls fire the moment the module is imported — before React mounts, before any context is ready, before the user has seen anything. If any of them throw synchronously, the entire app fails to boot. They should be wrapped in try/catch or deferred to `useEffect` in the root component.
 
-### 22. `App.tsx`: `GameScreen` calls `useSettings()` but also has its own `const { settings }` shadowing nothing — it's just duplicated from the top
+### 22. ✅ BY DESIGN — `App.tsx`: `GameScreen` calls `useSettings()` but also has its own `const { settings }` shadowing nothing — it's just duplicated from the top
 `GameScreen` at line ~503 imports `useSettings()` to get `settings.soundEnabled`. But `PauseMenu` at line ~387 also calls `useSettings()`. The audio effects in `GameScreen` are the only caller in that component — this is fine structurally, but if `GameScreen` ever needs more settings fields, they're all accessed through this one hook call, which is correct. No action needed, just note the duplication of hook calls across sibling components.
 
-### 23. `HomeScreen` and `GameOverScreen` each manage their own `showLeaderboard` state and render `LeaderboardModal` independently
+### 23. ✅ FIXED — `HomeScreen` and `GameOverScreen` each manage their own `showLeaderboard` state and render `LeaderboardModal` independently
 `LeaderboardModal` is instantiated in three places: `HomeScreen`, `GameOverScreen`, and `PauseMenu`. Each has its own local `showLeaderboard` boolean. This means three separate copies of the global fetch logic can run concurrently. A shared `LeaderboardModal` at the root level (with a context flag) would be cleaner.
 
-### 24. `gameContext.tsx`: `prevQueueLenRef` is not reset on `QUIT_GAME`
+### 24. ✅ FIXED — `gameContext.tsx`: `prevQueueLenRef` is not reset on `QUIT_GAME`
 ```ts
 if (!state.isRunning) prevQueueLenRef.current = 0;
 ```
 `QUIT_GAME` sets `isRunning = false`. The `useEffect` for `pendingSpawns` checks `!state.isRunning` and resets the ref. This is correct. However, `PAUSE_GAME` sets `isRunning = true, isPaused = true` and the spawn timers are cleared but `prevQueueLenRef` is not reset. If a spawn was pending when the user paused, the count is preserved across the pause correctly — but on resume the spawn timer logic re-runs and creates a duplicate timer. Low likelihood, but possible.
 
-### 25. `tileUtils.ts`: `uid()` uses `Math.random()`
+### 25. ✅ FIXED — `tileUtils.ts`: `uid()` uses `Math.random()`
 ```ts
 function uid(): string {
   return Math.random().toString(36).slice(2, 9);
@@ -126,23 +126,23 @@ function uid(): string {
 ```
 7 characters of base-36 gives ~78 billion possibilities, but with 16 tiles on a 4×4 grid and rapid creation during gameplay, collision probability is non-zero (birthday paradox). A collision would cause React key warnings and could break tile lookup by ID. Use a simple incrementing counter instead.
 
-### 26. `Tile.tsx`: SVG gradient IDs are tile-specific but not globally unique
+### 26. ✅ FIXED (via #25) — `Tile.tsx`: SVG gradient IDs are tile-specific but not globally unique
 ```ts
 const gradId  = `g${tile.id}`;
 const glossId = `gl${tile.id}`;
 ```
 SVG `<defs>` IDs must be unique per SVG document. In React Native, react-native-svg renders all SVGs into the same native canvas context. If two tiles ever have the same `tile.id` (see issue #25), their gradient IDs will collide and one tile will render with the wrong gradient. This is a consequence of issue #25, not a separate bug, but worth noting.
 
-### 27. `leaderboard.ts`: in-memory cache is module-level global state
+### 27. ✅ FIXED — `leaderboard.ts`: in-memory cache is module-level global state
 `_cachedGlobal` and `_cacheTime` survive hot reloads in development. This can cause the leaderboard to show stale data during development iteration. In production it's fine, but a `clearCache()` export would be useful for testing.
 
-### 28. `ads.ts`: ad ID comment says "TODO: replace" but is easy to miss before release
+### 28. ✅ FIXED — `ads.ts`: ad ID comment says "TODO: replace" but is easy to miss before release
 The placeholder `'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX'` will cause a blank ad (no fill) in production. This should be an environment variable or a build-time check that throws in release mode if the placeholder is still present.
 
-### 29. `App.tsx`: `VIGNETTE_SIZE = 90` is hardcoded pixels
+### 29. ✅ FIXED — `App.tsx`: `VIGNETTE_SIZE = 90` is hardcoded pixels
 On high-DPI screens the vignette will be proportionally thinner. Should use a percentage of screen width/height (`SCREEN_W * 0.12`) for consistent appearance.
 
-### 30. `settingsContext.tsx`: `updateSettings` replaces fields shallowly
+### 30. ✅ BY DESIGN — `settingsContext.tsx`: `updateSettings` replaces fields shallowly
 ```ts
 function updateSettings(update: Partial<Settings>) {
   setSettings(s => ({ ...s, ...update }));

@@ -13,8 +13,9 @@ export function canFuse(a: Tile, b: Tile): boolean {
   return a.id !== b.id && a.color === b.color && a.value === b.value;
 }
 
+let _uidCounter = 0;
 function uid(): string {
-  return Math.random().toString(36).slice(2, 9);
+  return String(++_uidCounter);
 }
 
 function randomColor(): TileColor {

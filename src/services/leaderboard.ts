@@ -67,6 +67,11 @@ async function savePersonalScore(name: string, score: number): Promise<void> {
 let _cachedGlobal: LeaderboardEntry[] | null = null;
 let _cacheTime = 0;
 
+export function clearCache(): void {
+  _cachedGlobal = null;
+  _cacheTime = 0;
+}
+
 export async function fetchTopScores(): Promise<{ entries: LeaderboardEntry[]; deviceId: string }> {
   const deviceId = await getDeviceId();
   const now      = Date.now();
