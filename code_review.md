@@ -10,7 +10,7 @@ Scope: All source files under `src/`, `App.tsx`, `scripts/generate-sounds.js`
 ### 1. ✅ FIXED — Firebase config is all placeholder values (`src/services/firebase.ts`)
 Every field is a literal string like `'YOUR_API_KEY'`. Firestore calls silently fail, so no scores are ever written or read globally. The leaderboard appears to work (the UI renders) but data is never persisted between installs or across devices. This needs a real Firebase project before any public release.
 
-### 2. ✅ FIXED — Device ID is a weak random string (`src/services/leaderboard.ts:36`)
+### 2. ✅ FIXED — Device ID is a weak random string (`src/services/leaderboard.ts:36`) — switched to UUID v4 (crypto.randomUUID unavailable in Hermes)
 ```ts
 id = Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 ```

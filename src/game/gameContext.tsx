@@ -12,14 +12,10 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-const SPAWN_DELAY_MS = 2000;
-
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, createInitialState());
-  const lastTickRef       = useRef<number | null>(null);
-  const rafRef            = useRef<number>(0);
-  const spawnTimersRef    = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const prevQueueLenRef   = useRef(0);
+  const lastTickRef = useRef<number | null>(null);
+  const rafRef      = useRef<number>(0);
 
   // Restore best score from storage on mount
   useEffect(() => {
@@ -59,36 +55,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       cancelAnimationFrame(rafRef.current);
       lastTickRef.current = null;
     };
-  }, [state.isRunning, state.isPaused]);
-
-  // Each new queue entry gets its own independent 2s timer
-  useEffect(() => {
-    if (state.isPaused) return;
-
-    const currentLen = state.pendingSpawns.length;
-    const prevLen    = prevQueueLenRef.current;
-
-    if (currentLen > prevLen) {
-      for (let i = 0; i < currentLen - prevLen; i++) {
-        const timer = setTimeout(() => {
-          dispatch({ type: 'SPAWN_PENDING' });
-          spawnTimersRef.current = spawnTimersRef.current.filter(t => t !== timer);
-        }, SPAWN_DELAY_MS);
-        spawnTimersRef.current.push(timer);
-      }
-    }
-
-    prevQueueLenRef.current = currentLen;
-  }, [state.pendingSpawns.length, state.isPaused]);
-
-  // Clear timers when game stops or pauses
-  useEffect(() => {
-    if (!state.isRunning || state.isPaused) {
-      spawnTimersRef.current.forEach(clearTimeout);
-      spawnTimersRef.current = [];
-      // Don't reset prevQueueLenRef on pause so resume picks up correctly
-      prevQueueLenRef.current = 0;
-    }
   }, [state.isRunning, state.isPaused]);
 
   return (

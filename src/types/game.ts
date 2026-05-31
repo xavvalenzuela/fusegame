@@ -29,15 +29,14 @@ export interface GameState {
   tiles: Tile[];
   score: number;
   bestScore: number;
-  combo: number;            // resets on mis-tap or idle timeout
-  comboIdleMs: number;      // ms since last successful match — resets combo when threshold hit
+  combo: number;
+  comboIdleMs: number;
   timeRemainingMs: number;
   isRunning: boolean;
   isGameOver: boolean;
   activePowerUps: PowerUp[];
   selectedTileId: string | null;
   isPaused: boolean;
-  pendingSpawns: number[];
   preGameBoost: PreGameBoost | null;
   canContinue: boolean;
   isContinued: boolean;
@@ -52,7 +51,6 @@ export type GameAction =
   | { type: 'RESUME_GAME' }
   | { type: 'QUIT_GAME' }
   | { type: 'SELECT_TILE'; tileId: string }
-  | { type: 'SPAWN_PENDING' }
   | { type: 'TICK'; deltaMs: number }
   | { type: 'GAME_OVER' }
   | { type: 'LOAD_BEST_SCORE'; score: number };

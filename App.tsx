@@ -118,7 +118,7 @@ function HomeScreen({ onShowLeaderboard }: { onShowLeaderboard: () => void }) {
 
   return (
     <View style={styles.centered}>
-      <Text style={styles.title}>FUSEGAME</Text>
+      <Text style={styles.title}>STARFUSE</Text>
       <Text style={styles.subtitle}>Match shapes & colors to fuse</Text>
 
       {/* Pre-game boost selection */}
@@ -607,7 +607,7 @@ function GameScreen() {
         <ScorePopupLayer />
       </View>
 
-      <Text style={styles.brandName}>FUSEGAME</Text>
+      <Text style={styles.brandName}>STARFUSE</Text>
 
       {/* Golden vignette rendered last so elevation doesn't get covered by grid panel */}
       <GoldenVignette visible={allThreeActive} />

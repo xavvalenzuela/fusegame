@@ -29,7 +29,8 @@ export function LeaderboardModal({ onClose }: Props) {
       const result = await fetchTopScores();
       setGlobal(result.entries);
       setDeviceId(result.deviceId);
-    } catch {
+    } catch (err) {
+      console.error('[leaderboard] fetchTopScores failed:', err);
       setError('Could not load scores. Check your connection.');
     } finally {
       setGlobalLoading(false);

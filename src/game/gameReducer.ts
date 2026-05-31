@@ -67,7 +67,6 @@ export function createInitialState(): GameState {
     activePowerUps: [],
     selectedTileId: null,
     isPaused: false,
-    pendingSpawns: [],
     preGameBoost: null,
     canContinue: true,
     isContinued: false,
@@ -162,23 +161,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newTime   = Math.min(state.timeRemainingMs + timeBonus, state.sessionDurationMs);
       const newScore  = state.score + scoreGain;
 
-      if (isStarFuse) {
-        return {
-          ...state,
-          tiles: newTiles,
-          score: newScore,
-          bestScore: Math.max(state.bestScore, newScore),
-          combo: newCombo,
-          comboIdleMs: 0,
-          selectedTileId: null,
-          activePowerUps,
-          timeRemainingMs: newTime,
-          pendingSpawns: [...state.pendingSpawns, fused ? 1 : 2],
-        };
+      // Spawn replacement tiles immediately — star fuses remove 2 with no result tile, so spawn 2
+      const spawnCount = isStarFuse && !fused ? 2 : 1;
+      for (let i = 0; i < spawnCount; i++) {
+        const spawned = spawnTile(newTiles);
+        if (spawned) newTiles = [...newTiles, spawned];
       }
-
-      const spawned = spawnTile(newTiles);
-      if (spawned) newTiles = [...newTiles, spawned];
 
       return {
         ...state,
@@ -191,17 +179,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activePowerUps,
         timeRemainingMs: newTime,
       };
-    }
-
-    case 'SPAWN_PENDING': {
-      if (state.pendingSpawns.length === 0) return state;
-      const [count, ...remaining] = state.pendingSpawns;
-      let tiles = [...state.tiles];
-      for (let i = 0; i < count; i++) {
-        const spawned = spawnTile(tiles);
-        if (spawned) tiles = [...tiles, spawned];
-      }
-      return { ...state, tiles, pendingSpawns: remaining };
     }
 
     case 'TICK': {

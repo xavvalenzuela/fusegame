@@ -33,7 +33,10 @@ export async function getDeviceId(): Promise<string> {
   if (_deviceId) return _deviceId;
   let id = await AsyncStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
     await AsyncStorage.setItem(DEVICE_ID_KEY, id);
   }
   _deviceId = id;
