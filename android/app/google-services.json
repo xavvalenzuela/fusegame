@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "863128586971",
+    "project_id": "starfuse-765a0",
+    "storage_bucket": "starfuse-765a0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:863128586971:android:85252f82e6a89712305afe",
+        "android_client_info": {
+          "package_name": "com.starfuse.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADonJ3TCdAEOHVk7oJdA8Q6JnpYiChAC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

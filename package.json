@@ -1,5 +1,5 @@
 {
-  "name": "fusegame-init",
+  "name": "starfuse",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {

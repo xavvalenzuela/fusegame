@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FuseGame",
-    "slug": "fusegame",
+    "name": "Starfuse",
+    "slug": "starfuse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +17,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.xavalenzuela.fusegame"
+      "package": "com.starfuse.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

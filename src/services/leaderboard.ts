@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, getDocs,
+  collection, doc, setDoc, getDoc, getDocs,
   query, orderBy, limit, serverTimestamp,
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,7 +33,7 @@ export async function getDeviceId(): Promise<string> {
   if (_deviceId) return _deviceId;
   let id = await AsyncStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
-    id = Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+    id = crypto.randomUUID();
     await AsyncStorage.setItem(DEVICE_ID_KEY, id);
   }
   _deviceId = id;
@@ -43,8 +43,15 @@ export async function getDeviceId(): Promise<string> {
 // ── Personal scores (AsyncStorage) ────────────────────────────────────────
 
 export async function getPersonalScores(): Promise<PersonalEntry[]> {
-  const raw = await AsyncStorage.getItem(PERSONAL_KEY);
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const raw = await AsyncStorage.getItem(PERSONAL_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    return [];
+  }
 }
 
 async function savePersonalScore(name: string, score: number): Promise<void> {
@@ -101,11 +108,10 @@ export async function submitScore(name: string, score: number): Promise<void> {
   // Invalidate global cache so next open reflects the new entry
   _cachedGlobal = null;
 
-  // Post to Firestore
-  await addDoc(collection(db, COLLECTION), {
-    name: trimmed,
-    score,
-    deviceId,
-    timestamp: serverTimestamp(),
-  });
+  // Upsert: one document per device, only keep best score
+  const docRef  = doc(db, COLLECTION, deviceId);
+  const existing = await getDoc(docRef);
+  if (!existing.exists() || existing.data().score < score) {
+    await setDoc(docRef, { name: trimmed, score, deviceId, timestamp: serverTimestamp() });
+  }
 }

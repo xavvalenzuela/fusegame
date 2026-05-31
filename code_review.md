@@ -7,22 +7,22 @@ Scope: All source files under `src/`, `App.tsx`, `scripts/generate-sounds.js`
 
 ## Critical
 
-### 1. Firebase config is all placeholder values (`src/services/firebase.ts`)
+### 1. ✅ FIXED — Firebase config is all placeholder values (`src/services/firebase.ts`)
 Every field is a literal string like `'YOUR_API_KEY'`. Firestore calls silently fail, so no scores are ever written or read globally. The leaderboard appears to work (the UI renders) but data is never persisted between installs or across devices. This needs a real Firebase project before any public release.
 
-### 2. Device ID is a weak random string (`src/services/leaderboard.ts:36`)
+### 2. ✅ FIXED — Device ID is a weak random string (`src/services/leaderboard.ts:36`)
 ```ts
 id = Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 ```
 `Math.random()` is not cryptographically random. On Android, `Date.now()` has millisecond resolution, so two installs within the same millisecond (e.g. emulator factory reset) can produce the same ID. Use `expo-crypto` (`randomUUID`) or `react-native-uuid` instead.
 
-### 3. `submitScore` always creates a new Firestore document (`src/services/leaderboard.ts:105`)
+### 3. ✅ FIXED — `submitScore` always creates a new Firestore document (`src/services/leaderboard.ts:105`)
 Every game over posts a new document. A single user can spam the global leaderboard with thousands of entries across sessions. There is no deduplication, rate limiting, or "keep only best score per device" logic. The global board will degrade quickly once real users appear.
 
 ### 4. Personal scores are never capped per-device globally
 `savePersonalScore` caps at 20 entries locally, but if the user reinstalls the app the local history is lost entirely (AsyncStorage is wiped on uninstall). There is no cloud backup of personal history.
 
-### 5. `getPersonalScores` deserialises raw JSON without validation (`src/services/leaderboard.ts:47`)
+### 5. ✅ FIXED — `getPersonalScores` deserialises raw JSON without validation (`src/services/leaderboard.ts:47`)
 ```ts
 return raw ? JSON.parse(raw) : [];
 ```

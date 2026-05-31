@@ -1,15 +1,13 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace with your real Firebase config from console.firebase.google.com
-// Project settings → Your apps → Web app → SDK setup and configuration
 const firebaseConfig = {
-  apiKey:            'YOUR_API_KEY',
-  authDomain:        'YOUR_PROJECT_ID.firebaseapp.com',
-  projectId:         'YOUR_PROJECT_ID',
-  storageBucket:     'YOUR_PROJECT_ID.appspot.com',
-  messagingSenderId: 'YOUR_SENDER_ID',
-  appId:             'YOUR_APP_ID',
+  apiKey:            'AIzaSyADonJ3TCdAEOHVk7oJdA8Q6JnpYiChAC4',
+  authDomain:        'starfuse-765a0.firebaseapp.com',
+  projectId:         'starfuse-765a0',
+  storageBucket:     'starfuse-765a0.firebasestorage.app',
+  messagingSenderId: '863128586971',
+  appId:             '1:863128586971:android:85252f82e6a89712305afe',
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
