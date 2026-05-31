@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4A1A00"/>
+      <stop offset="100%" stop-color="#1E0800"/>
+    </radialGradient>
+    <radialGradient id="flameCore" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#FFEE44"/>
+      <stop offset="40%" stop-color="#FF8800"/>
+      <stop offset="100%" stop-color="#CC2200" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Icon background -->
+  <rect width="64" height="64" rx="12" fill="url(#bgGrad)"/>
+  <rect width="64" height="64" rx="12" fill="none" stroke="#FF6622" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Outer flame (large, orange-red) -->
+  <path d="M32,8 C32,8 44,20 44,32 C44,36 42,39 40,40 C41,35 39,30 36,28 C37,33 35,37 32,38 C29,37 27,33 28,28 C25,30 23,35 24,40 C22,39 20,36 20,32 C20,20 32,8 32,8 Z"
+        fill="url(#flameCore)" filter="url(#glow)"/>
+
+  <!-- Mid flame (brighter orange) -->
+  <path d="M32,18 C32,18 40,27 40,34 C40,37 38,40 36,41 C37,37 35,33 33,31 C34,35 32,39 32,39 C32,39 30,35 31,31 C29,33 27,37 28,41 C26,40 24,37 24,34 C24,27 32,18 32,18 Z"
+        fill="#FF9933" opacity="0.9"/>
+
+  <!-- Inner flame (yellow core) -->
+  <path d="M32,26 C32,26 37,32 37,37 C37,40 35,42 33,42 C34,39 33,36 32,35 C31,36 30,39 31,42 C29,42 27,40 27,37 C27,32 32,26 32,26 Z"
+        fill="#FFEE55" opacity="0.95" filter="url(#glow)"/>
+
+  <!-- Base glow -->
+  <ellipse cx="32" cy="50" rx="10" ry="3" fill="#FF6600" opacity="0.4" filter="url(#glow)"/>
+
+  <!-- Small ember sparks -->
+  <circle cx="22" cy="20" r="1.5" fill="#FFAA33" opacity="0.7"/>
+  <circle cx="44" cy="26" r="1"   fill="#FFCC44" opacity="0.6"/>
+  <circle cx="18" cy="34" r="1"   fill="#FF8800" opacity="0.5"/>
+  <circle cx="47" cy="38" r="1.2" fill="#FFAA33" opacity="0.6"/>
+</svg>

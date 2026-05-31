@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3A3000"/>
+      <stop offset="100%" stop-color="#161200"/>
+    </radialGradient>
+    <linearGradient id="boltGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFEE44"/>
+      <stop offset="100%" stop-color="#FFAA00"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Icon background -->
+  <rect width="64" height="64" rx="12" fill="url(#bgGrad)"/>
+  <rect width="64" height="64" rx="12" fill="none" stroke="#FFCC22" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Glow halo behind bolt -->
+  <ellipse cx="32" cy="32" rx="16" ry="20" fill="#FFAA00" opacity="0.15" filter="url(#glow)"/>
+
+  <!-- Lightning bolt -->
+  <polygon points="37,8 24,34 31,34 27,56 42,28 34,28"
+           fill="url(#boltGrad)" filter="url(#softGlow)"/>
+
+  <!-- Inner bright core on bolt -->
+  <polygon points="36,14 27,33 32,33 29,48 39,30 33,30"
+           fill="#FFFBAA" opacity="0.6"/>
+
+  <!-- Spark streaks radiating outward -->
+  <g stroke="#FFDD44" stroke-width="1.2" stroke-linecap="round" opacity="0.7">
+    <line x1="46" y1="16" x2="52" y2="10"/>
+    <line x1="50" y1="28" x2="58" y2="26"/>
+    <line x1="48" y1="40" x2="54" y2="46"/>
+    <line x1="18" y1="16" x2="12" y2="10"/>
+    <line x1="14" y1="28" x2="6"  y2="26"/>
+    <line x1="16" y1="44" x2="10" y2="50"/>
+  </g>
+
+  <!-- Spark dots -->
+  <g fill="#FFEE88" opacity="0.8">
+    <circle cx="52" cy="10" r="1.5"/>
+    <circle cx="58" cy="26" r="1.2"/>
+    <circle cx="54" cy="46" r="1.5"/>
+    <circle cx="12" cy="10" r="1.5"/>
+    <circle cx="6"  cy="26" r="1.2"/>
+    <circle cx="10" cy="50" r="1.5"/>
+  </g>
+</svg>
