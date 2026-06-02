@@ -20,7 +20,7 @@ const POWER_UP_STACK_MS: Record<PowerUpType, number> = {
 };
 const MULTIPLIER_BOOST_INITIAL = 5;  // +5 to combo on first trigger
 const MULTIPLIER_BOOST_STACK   = 3;  // +3 more on each re-trigger
-const TIME_SLOW_FACTOR       = 0.35; // timer at 35% speed (up from 50%)
+const TIME_SLOW_FACTOR       = 0.50; // timer at 50% speed
 
 // Combo idle timeout: 3000ms at full time, 1500ms at 0s — linear scale
 const COMBO_TIMEOUT_MAX_MS = 3000;
@@ -172,7 +172,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activePowerUps = addOrRefreshPowerUp(activePowerUps, colorToPowerUp(from.color));
       }
 
-      const timeBonus = isStarFuse ? STAR_TIME_BONUS_MS : 0;
+      // Blue stars add time; red and green only trigger their power-ups
+      const timeBonus = isStarFuse && from.color === 'blue' ? STAR_TIME_BONUS_MS : 0;
       const newTime   = Math.min(state.timeRemainingMs + timeBonus, state.sessionDurationMs);
       const newScore  = state.score + scoreGain;
 

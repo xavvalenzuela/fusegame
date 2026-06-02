@@ -326,6 +326,58 @@ function ScorePopupLayer() {
   );
 }
 
+// ---------- Floating time bonus ----------
+
+function FloatingTime({ onDone }: { onDone: () => void }) {
+  const ty      = useSharedValue(0);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    opacity.value = withSequence(
+      withTiming(1,  { duration: 80 }),
+      withDelay(400, withTiming(0, { duration: 500 })),
+    );
+    ty.value = withTiming(-50, { duration: 980 });
+    const t = setTimeout(onDone, 980);
+    return () => clearTimeout(t);
+  }, []);
+
+  const s = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: ty.value }],
+  }));
+
+  return (
+    <Animated.Text style={[styles.floatingTimeText, s]}>+3s</Animated.Text>
+  );
+}
+
+function TimePopupLayer() {
+  const { state } = useGame();
+  const [popups, setPopups] = useState<{ id: number }[]>([]);
+  const prevTimeRef = useRef(state.timeRemainingMs);
+  const nextId = useRef(0);
+
+  useEffect(() => {
+    if (state.timeRemainingMs > prevTimeRef.current) {
+      const id = nextId.current++;
+      setPopups(p => [...p, { id }]);
+    }
+    prevTimeRef.current = state.timeRemainingMs;
+  }, [state.timeRemainingMs]);
+
+  return (
+    <View style={styles.timePopupLayer} pointerEvents="none">
+      {popups.map(p => (
+        <FloatingTime
+          key={p.id}
+          onDone={() => setPopups(prev => prev.filter(x => x.id !== p.id))}
+        />
+      ))}
+    </View>
+  );
+}
+
 // ---------- Golden vignette ----------
 
 function GoldenVignette({ visible }: { visible: boolean }) {
@@ -562,7 +614,10 @@ function GameScreen() {
           </View>
           <Text style={styles.comboText}>COMBO {state.combo}</Text>
           <View style={styles.timerRow}>
-            <Text style={styles.timerText}>{seconds}s</Text>
+            <View style={styles.timerTextWrap}>
+              <Text style={styles.timerText}>{seconds}s</Text>
+              <TimePopupLayer />
+            </View>
             <TouchableOpacity
               style={styles.pauseBtn}
               onPress={() => dispatch({ type: 'PAUSE_GAME' })}
@@ -911,6 +966,27 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: '#FFD700',
     fontSize: 30,
+    fontFamily: 'Orbitron-Black',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  timerTextWrap: {
+    position: 'relative',
+    alignItems: 'center',
+  },
+  timePopupLayer: {
+    position: 'absolute',
+    bottom: '100%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  floatingTimeText: {
+    position: 'absolute',
+    alignSelf: 'center',
+    color: '#44AAFF',
+    fontSize: 18,
     fontFamily: 'Orbitron-Black',
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 2 },
