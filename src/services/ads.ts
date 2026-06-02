@@ -5,12 +5,9 @@ import {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
-const REWARDED_AD_PLACEHOLDER = 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX';
-const REWARDED_AD_ID = __DEV__ ? TestIds.REWARDED : REWARDED_AD_PLACEHOLDER;
-
-if (!__DEV__ && REWARDED_AD_ID === REWARDED_AD_PLACEHOLDER) {
-  console.error('[ads] REWARDED_AD_ID is still a placeholder — ads will not load in production');
-}
+const REWARDED_AD_ID = __DEV__
+  ? TestIds.REWARDED
+  : 'ca-app-pub-2747379081239953/3746804355';
 
 export function showRewardedAd(onRewarded: () => void, onDismissed?: () => void): void {
   const ad = RewardedAd.createForAdRequest(REWARDED_AD_ID, {
