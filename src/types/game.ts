@@ -41,6 +41,7 @@ export interface GameState {
   canContinue: boolean;
   isContinued: boolean;
   sessionDurationMs: number;
+  totalElapsedMs: number; // real wall-clock time played this session (ignores time-slow)
 }
 
 export type GameAction =

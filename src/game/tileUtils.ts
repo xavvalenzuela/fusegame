@@ -18,8 +18,13 @@ function uid(): string {
   return String(++_uidCounter);
 }
 
-function randomColor(): TileColor {
-  return COLORS[Math.floor(Math.random() * COLORS.length)];
+// blueChance: 0–1 probability of spawning blue. Default 1/3 (equal weight).
+// Reduced late-game to prevent infinite blue star / time-slow loops.
+function randomColor(blueChance = 1 / 3): TileColor {
+  const r = Math.random();
+  if (r < blueChance) return 'blue';
+  // remaining probability split evenly between red and green
+  return r < blueChance + (1 - blueChance) / 2 ? 'red' : 'green';
 }
 
 function randomSpawnValue(): TileValue {
@@ -41,7 +46,7 @@ export function createInitialTiles(): Tile[] {
   return tiles;
 }
 
-export function spawnTile(tiles: Tile[]): Tile | null {
+export function spawnTile(tiles: Tile[], blueChance?: number): Tile | null {
   const occupied = new Set(tiles.map(t => `${t.position.row},${t.position.col}`));
   const empty: TilePosition[] = [];
   for (let row = 0; row < GRID_ROWS; row++) {
@@ -51,7 +56,7 @@ export function spawnTile(tiles: Tile[]): Tile | null {
   }
   if (empty.length === 0) return null;
   const pos = empty[Math.floor(Math.random() * empty.length)];
-  return { id: uid(), value: randomSpawnValue(), color: randomColor(), position: pos };
+  return { id: uid(), value: randomSpawnValue(), color: randomColor(blueChance), position: pos };
 }
 
 export function makeFusedTile(from: Tile, to: Tile): Tile | null {

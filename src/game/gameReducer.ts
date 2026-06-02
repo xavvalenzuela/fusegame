@@ -26,6 +26,19 @@ const TIME_SLOW_FACTOR       = 0.35; // timer at 35% speed (up from 50%)
 const COMBO_TIMEOUT_MAX_MS = 3000;
 const COMBO_TIMEOUT_MIN_MS = 1500;
 
+// Blue tile spawn probability fades from 1/3 → BLUE_CHANCE_MIN between
+// BLUE_FADE_START_MS and BLUE_FADE_END_MS of total real elapsed time.
+const BLUE_FADE_START_MS = 60_000;
+const BLUE_FADE_END_MS   = 120_000;
+const BLUE_CHANCE_MIN    = 0.08;
+
+function blueChanceForElapsed(totalElapsedMs: number): number {
+  if (totalElapsedMs <= BLUE_FADE_START_MS) return 1 / 3;
+  if (totalElapsedMs >= BLUE_FADE_END_MS)   return BLUE_CHANCE_MIN;
+  const t = (totalElapsedMs - BLUE_FADE_START_MS) / (BLUE_FADE_END_MS - BLUE_FADE_START_MS);
+  return 1 / 3 + t * (BLUE_CHANCE_MIN - 1 / 3);
+}
+
 function colorToPowerUp(color: string): PowerUpType {
   if (color === 'blue') return 'time-slow';
   if (color === 'red')  return 'score-double';
@@ -71,6 +84,7 @@ export function createInitialState(): GameState {
     canContinue: true,
     isContinued: false,
     sessionDurationMs: GAME_DURATION_MS,
+    totalElapsedMs: 0,
   };
 }
 
@@ -120,6 +134,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         timeRemainingMs: CONTINUE_BONUS_MS,
         sessionDurationMs: CONTINUE_BONUS_MS,
         selectedTileId: null,
+        // totalElapsedMs carries over — blue fade continues from where it left off
       };
     }
 
@@ -162,9 +177,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newScore  = state.score + scoreGain;
 
       // Spawn replacement tiles immediately — star fuses remove 2 with no result tile, so spawn 2
+      const blueChance = blueChanceForElapsed(state.totalElapsedMs);
       const spawnCount = isStarFuse && !fused ? 2 : 1;
       for (let i = 0; i < spawnCount; i++) {
-        const spawned = spawnTile(newTiles);
+        const spawned = spawnTile(newTiles, blueChance);
         if (spawned) newTiles = [...newTiles, spawned];
       }
 
@@ -211,8 +227,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         timeRemainingMs: newTime,
         activePowerUps,
-        combo:      comboReset ? 0 : state.combo,
-        comboIdleMs: comboReset ? 0 : newComboIdle,
+        combo:          comboReset ? 0 : state.combo,
+        comboIdleMs:    comboReset ? 0 : newComboIdle,
+        totalElapsedMs: state.totalElapsedMs + action.deltaMs,
       };
     }
 
