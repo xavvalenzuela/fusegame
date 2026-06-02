@@ -13,7 +13,7 @@ import { GameProvider, useGame } from './src/game/gameContext';
 import { SettingsProvider, useSettings } from './src/game/settingsContext';
 import { Grid } from './src/components/Grid';
 import { LeaderboardModal } from './src/components/LeaderboardModal';
-import { showRewardedAd } from './src/services/ads';
+import { showRewardedAd, preloadRewardedAd } from './src/services/ads';
 import { submitScore, prefetchLeaderboard } from './src/services/leaderboard';
 import { initAudio, playSound, startMusic, stopMusic, pauseMusic, resumeMusic, setSoundEnabled } from './src/services/audio';
 import { BACKGROUND_COLOR, GAME_DURATION_MS } from './src/constants/theme';
@@ -623,7 +623,7 @@ export default function App() {
   const [fontsLoaded] = useFonts({ 'Orbitron-Bold': Orbitron_700Bold, 'Orbitron-Black': Orbitron_900Black });
 
   useEffect(() => {
-    MobileAds().initialize().catch(() => {});
+    MobileAds().initialize().then(() => preloadRewardedAd()).catch(() => {});
     prefetchLeaderboard();
     initAudio().catch(() => {});
   }, []);
